@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Video Background</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: black; /* A fallback color */
+        }
+        #bg-video {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            z-index: -100;
+            transform: translateX(-50%) translateY(-50%);
+            object-fit: cover; /* This makes the video cover the screen without distortion */
+        }
+    </style>
+</head>
+<body>
+    <!-- 
+      The video source is now a simple, relative path.
+      The browser will look for "Untitled Project.mp4" in the SAME folder as this HTML file.
+    -->
+    <video autoplay loop muted playsinline id="bg-video">
+        <source src="Untitled Project.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+</body>
+</html>

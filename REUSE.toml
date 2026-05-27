@@ -1,0 +1,9 @@
+# This project is intended to be license-compliant and SPDX-tagged for reuse.
+# It is not required by tooling at runtime, but helps document the licensing scheme.
+
+version = 1
+
+# Use MIT as the default license for this repository's original source code.
+# Third-party licenses apply to vendored dependencies; see their respective files.
+default-license = "MIT"
+

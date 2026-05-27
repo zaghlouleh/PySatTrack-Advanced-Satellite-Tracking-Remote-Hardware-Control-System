@@ -1,0 +1,7 @@
+This repository is configured for license reuse documentation using REUSE.
+
+Copy/paste checklist for release:
+- Ensure original source files (Python, JS, HTML, etc.) contain SPDX headers or reference LICENSE.
+- Ensure any third-party assets have their own license metadata (e.g., LICENSE-* files or SPDX tags).
+- Ensure the root LICENSE file matches the chosen default license for original code.
+

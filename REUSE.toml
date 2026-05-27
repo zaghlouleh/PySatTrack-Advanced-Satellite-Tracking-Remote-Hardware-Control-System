@@ -1,0 +1,17 @@
+# REUSE specification configuration
+# https://reuse.software/spec-mention.html
+
+version = 1
+
+# This project uses MIT licensing for its own source code.
+# Third-party assets are handled via their own copyright/licensing terms.
+
+[[annotations]]
+path = ["*.py", "*.txt", "*.md", "*.ico", "*.bsp"]
+precedence = "system"
+
+[[license]]
+# Main license for project source code.
+identifier = "MIT"
+text = "MIT"
+

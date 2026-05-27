@@ -1,0 +1,8 @@
+requests
+pyserial
+skyfield
+PyQt5
+PyQtWebEngine
+python-dotenv
+psutil
+smbus2; sys_platform == 'linux'

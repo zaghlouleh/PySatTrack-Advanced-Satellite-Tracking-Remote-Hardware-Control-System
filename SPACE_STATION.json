@@ -1,0 +1,23 @@
+{
+  "sat_id": 25544,
+  "sat_name": "SPACE STATION",
+  "obs_lat": 34.6402,
+  "obs_lng": 39.0494,
+  "obs_alt": 0.0,
+  "interval": 2,
+  "period_tle_calculated_min": 92.97796761537097,
+  "norad_id": 25544,
+  "satlatitude": -41.59571173,
+  "satlongitude": -10.8299098,
+  "sataltitude": 436.85,
+  "azimuth": 215.1,
+  "elevation": -42.52,
+  "ra": 291.43850392,
+  "dec": -61.71743126,
+  "timestamp": 1779869966,
+  "timestamp_iso": "2026-05-27T08:19:26+00:00",
+  "speed_kms": 6.862,
+  "speed_mis_s": 4.264,
+  "lst": 3.2543,
+  "eclipsed": false
+}

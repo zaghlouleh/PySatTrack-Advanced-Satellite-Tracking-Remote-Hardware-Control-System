@@ -1,0 +1,22 @@
+REUSE-toolbox.txt
+
+This file is intended as a small checklist for maintaining REUSE compliance
+in this repository.
+
+Usage:
+1) Keep REUSE.toml up to date.
+2) Ensure every source file has an accompanying licensing statement.
+   - Either via per-file headers (preferred) or via correct REUSE metadata.
+3) Ensure all new files are covered by REUSE annotations in REUSE.toml.
+4) Run a REUSE check before releases.
+
+Suggested commands (depending on your REUSE tool version):
+- reuse lint
+- reuse scan
+- reuse spdx --all
+
+Note:
+This repository currently ships a top-level MIT LICENSE for the project
+source code. If you add new dependencies/assets, update the licensing
+information for those assets as required by REUSE.
+

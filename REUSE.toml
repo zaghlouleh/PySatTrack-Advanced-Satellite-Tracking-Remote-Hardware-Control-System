@@ -1,0 +1,20 @@
+# REUSE specification configuration
+# https://reuse.software/spec-configuration/ (preview)
+
+version = 2
+
+# This project uses a repository-wide license file for most source code.
+# If you add files under different licenses, update the mapping below.
+
+[[annotations]]
+path = "*"
+precedence = "highest"
+
+# Default license for all files not otherwise specified.
+# The license text is in the top-level LICENSE file.
+comment = "Default license mapping for this repository."
+
+[[license_files]]
+pattern = "LICENSE"
+license = "MIT"
+

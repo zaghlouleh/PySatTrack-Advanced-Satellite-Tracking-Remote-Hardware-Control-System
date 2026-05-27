@@ -1,0 +1,8 @@
+PyQt5==5.15.10
+PyQtWebEngine==5.15.6
+psutil==5.9.8
+requests==2.31.0
+skyfield==1.47
+pyserial==3.5
+smbus2==0.4.2
+spidev==3.6\npython-dotenv

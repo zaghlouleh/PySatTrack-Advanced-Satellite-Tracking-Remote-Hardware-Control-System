@@ -1,0 +1,19 @@
+# REUSE toolbox (human-readable helper)
+# https://reuse.software/spec/#reuse-toolbox
+
+This repository is configured to use:
+- MIT license text in: LICENSE
+- Default license mapping: LICENSE
+
+Suggested workflow when changing the codebase:
+1) Add SPDX identifiers to newly created source files (e.g., at the top):
+   - SPDX-License-Identifier: MIT
+2) For any file that differs from the repository default, add explicit
+   SPDX headers and/or update REUSE.toml mapping.
+3) Run REUSE checks (if you have the official REUSE tooling installed):
+   - reuse lint
+
+Notes:
+- This project currently does not appear to include SPDX headers inside files.
+  Adding SPDX headers is recommended for maximum REUSE compliance.
+

@@ -1,0 +1,16 @@
+# SPDX-FileCopyrightText: 2026
+# SPDX-License-Identifier: CC0-1.0
+
+# REUSE Software Package Metadata.
+# https://reuse.software/spec-05-files/#reuse_toml
+
+version = 1
+
+# This project intentionally uses a single, repository-wide license.
+# Add additional sections only if you split licenses across files/directories.
+
+[[licenses]]
+# The repository uses the MIT license text found in ./LICENSE
+path = "LICENSE"
+spdx-id = "MIT"
+

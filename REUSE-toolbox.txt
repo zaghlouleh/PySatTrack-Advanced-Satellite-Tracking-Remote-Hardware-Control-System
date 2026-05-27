@@ -1,0 +1,14 @@
+REUSE-toolbox.txt
+
+This repository is REUSE-compliant as follows:
+- All source files in the repository are governed by a single license (MIT).
+- The MIT license text is in ./LICENSE.
+- REUSE metadata is declared in ./REUSE.toml.
+
+Usage examples:
+- Validate: reuse lint
+- Show compliance status: reuse status
+
+Note:
+- If you run into "missing copyright" errors, add SPDX headers to the affected files.
+

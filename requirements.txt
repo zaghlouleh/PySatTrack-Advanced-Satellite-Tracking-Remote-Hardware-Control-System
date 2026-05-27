@@ -1,0 +1,5 @@
+requests
+pyserial
+PyQt5
+skyfield
+ttkthemes

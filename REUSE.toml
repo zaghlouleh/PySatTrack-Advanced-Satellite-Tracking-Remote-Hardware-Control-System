@@ -1,0 +1,17 @@
+# SPDX-REUSE configuration for satellite_tracker_Version_6
+# https://reuse.software/spec/README.html
+
+version = 0.2
+
+# Files not explicitly tagged use the default license below.
+# You can override per-path using [[annotations]].
+default-license = "MIT"
+
+[[annotations]]
+path = ["*.py", "*.cpp", "*.ino", "*.h", "*.md", "*.html", "*.css", "*.js", "*.txt", "*.json", "*.xml"]
+precedence = 10
+comment = "Project source and documentation."
+
+# Binary and large assets are not annotated by default; they are typically
+# external (e.g., icon.ico, mp4). Add overrides here when needed.
+

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+<title>Satellite Tracker Map</title>
+    <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjNjRCNUY2Ii8+Cjx0ZXh0IHg9IjE2IiB5PSIyMSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+🛰️PC90ZXh0Pgo8L3N2Zz4K" type="image/svg+xml">
+</xai:function_call name="edit_file">
+<parameter name="path">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; overflow: hidden; }
+        #map { height: calc(100vh - 120px); width: 100vw; background: #1a1a1a; }
+
+        /* Bottom Status Panel */
+        .bottom-panel {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            height: 120px; background: rgba(15, 15, 20, 0.95);
+            color: #d4d4d4; border-top: 1px solid #333;
+            display: flex; justify-content: space-around; padding: 10px; z-index: 1000;
+        }
+        .section { flex: 1; border-right: 1px solid #333; padding: 0 15px; }
+        .section:last-child { border-right: none; }
+        .section h3 { margin: 0 0 8px 0; color: #64B5F6; font-size: 13px; text-transform: uppercase; }
+        .data-item { font-size: 12px; margin: 4px 0; }
+        .highlight { color: #00E676; font-weight: bold; }
+
+        /* Icon Styles */
+        .sat-icon { font-size: 22px; text-shadow: 0 0 10px #64B5F6; }
+        .observer-icon { font-size: 20px; text-shadow: 0 0 10px #00E676; }
+.sun-icon {
+            font-size: 36px !important;
+            text-shadow: 0 0 20px #FFD600, 0 0 40px #FFEB3B !important;
+            /* Remove box-shadow since it renders on the divIcon container and can show as a gray square. */
+            box-shadow: none !important;
+            color: #FFD600 !important;
+            background: transparent !important;
+        }
+        .moon-icon {
+            font-size: 32px !important;
+            text-shadow: 0 0 15px #F0F0F0, 0 0 30px #E0E0E0 !important;
+            /* Remove box-shadow since it renders on the divIcon container and can show as a gray square. */
+            box-shadow: none !important;
+            color: #F5F5F5 !important;
+            background: transparent !important;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <div class="bottom-panel">
+        <div class="section">
+            <h3>Next Pass Information</h3>
+            <div id="pass-info">
+                <div class="data-item">Rise: <span id="p-rise" class="highlight">---</span></div>
+                <div class="data-item">Set: <span id="p-set" class="highlight">---</span></div>
+                <div class="data-item">Max Elevation: <span id="p-el" class="highlight">---</span></div>
+                <div class="data-item">Status: <span id="p-countdown" class="highlight">Select Satellite</span></div>
+            </div>
+        </div>
+        <div class="section">
+            <h3>Current Telemetry</h3>
+            <div class="data-item">Elevation: <span id="live-el" class="highlight">---</span></div>
+            <div class="data-item">Azimuth: <span id="live-az" class="highlight">---</span></div>
+            <div class="data-item">Altitude: <span id="live-alt" class="highlight">---</span> km</div>
+        </div>
+        <div class="section">
+            <h3>Dynamic Status</h3>
+            <div class="data-item">Visibility: <span id="live-vis" class="highlight">---</span></div>
+            <div class="data-item">Speed: <span id="live-spd" class="highlight">---</span> km/s</div>
+            <div class="data-item">
+                <label style="font-size: 11px; cursor: pointer;">
+                    <input type="checkbox" id="celestial-toggle" checked onchange="toggleCelestial()"> Celestial ON
+                </label>
+            </div>
+        </div>
+    </div>
+    <script>
+    function toggleCelestial() {
+        var cb = document.getElementById('celestial-toggle');
+        var visible = cb.checked;
+        if (sunMarker) sunMarker[visible ? 'addTo' : 'removeFrom'](map);
+        if (moonMarker) moonMarker[visible ? 'addTo' : 'removeFrom'](map);
+        pyBridge.js_log('Celestial markers: ' + (visible ? 'VISIBLE' : 'HIDDEN'));
+    }
+    </script>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+    
+    <script>
+        var map, satelliteMarker, observerMarker, sunMarker, moonMarker, footprintCircle;
+        var trackSteps = [], currentPath, orbitPaths = [], passPaths = [];
+    
+        function initMap() {
+            map = L.map('map', { 
+                worldCopyJump: true, minZoom: 2, maxBounds: [[-90, -180], [90, 180]] 
+            }).setView([0, 0], 2);
+            
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OpenStreetMap'
+            }).addTo(map);
+    
+            if (typeof qt !== 'undefined') {
+                new QWebChannel(qt.webChannelTransport, function(channel) {
+                    window.pyBridge = channel.objects.pyBridge;
+                    pyBridge.js_log('JS: Bridge ready, calling on_js_ready()');
+                    pyBridge.on_js_ready();
+                    pyBridge.update_satellite_position.connect(function(lat, lng, alt, spd, az, el) { updateSatellite(lat, lng, alt, spd, az, el); });
+                    pyBridge.update_observer_position.connect(update_observer_position);
+                    pyBridge.update_traffic_info.connect(updateTrafficInfo);
+                    pyBridge.update_pass_info.connect(updatePassInfo);
+                    pyBridge.update_satellite_range.connect(updateSatelliteRange);
+                    pyBridge.add_track_step.connect(addTrackStep);
+                    pyBridge.update_celestial_position.connect(function(body, lat, lng) { update_celestial_position(body, lat, lng); });
+                    pyBridge.draw_orbit_path.connect(drawOrbitPath);
+                    pyBridge.highlight_visible_pass.connect(highlightVisiblePass);
+                    pyBridge.clear_track_steps.connect(function() {
+                        trackSteps = [];
+                        if (currentPath) { map.removeLayer(currentPath); currentPath = null; }
+                        pyBridge.js_log('JS: Track steps cleared');
+                    });
+                    pyBridge.set_map_view.connect(setView);
+                    pyBridge.clear_satellite_data.connect(clearSatelliteData);
+
+                });
+            }
+        }
+
+        function setView(lat, lng, zoom) { map.setView([lat, lng], zoom); }
+    
+        function update_observer_position(lat, lng) {
+            pyBridge.js_log('JS update_observer_position: ' + lat + ',' + lng);
+            if (observerMarker) observerMarker.setLatLng([lat, lng]);
+            else {
+                observerMarker = L.marker([lat, lng], {icon: L.divIcon({className: 'observer-icon', html: '📍', iconSize: [30, 30], iconAnchor: [15, 15]})}).addTo(map);
+                pyBridge.js_log('JS: Observer marker created');
+            }
+            map.panTo([lat, lng]);
+        }
+    
+        function updateSatellite(lat, lng, alt, spd, az, el) {
+            pyBridge.js_log('JS updateSatellite: el=' + el.toFixed(1) + '° az=' + az.toFixed(1) + '° alt=' + alt.toFixed(0) + 'km');
+            if (satelliteMarker) satelliteMarker.setLatLng([lat, lng]);
+            else satelliteMarker = L.marker([lat, lng], {icon: L.divIcon({className: 'sat-icon', html: '🛰️'})}).addTo(map);
+            
+            // Map List Parity: Use the IDs from the restructured HTML
+            if(document.getElementById('live-el')) document.getElementById('live-el').innerText = el.toFixed(1) + '°';
+            if(document.getElementById('live-az')) document.getElementById('live-az').innerText = az.toFixed(1) + '°';
+            if(document.getElementById('live-alt')) document.getElementById('live-alt').innerText = alt.toFixed(0);
+            if(document.getElementById('live-spd')) document.getElementById('live-spd').innerText = spd.toFixed(2);
+            if(document.getElementById('live-vis')) document.getElementById('live-vis').innerText = el > 0 ? "VISIBLE" : "BELOW HORIZON";
+        }
+    
+        function updateTrafficInfo(data) {
+            pyBridge.js_log("JS updateTrafficInfo called");
+            if (data && data.status && document.getElementById('p-countdown')) {
+                document.getElementById('p-countdown').innerText = data.status;
+            }
+            if (data && data.visibility && document.getElementById('live-vis')) {
+                document.getElementById('live-vis').innerText = data.visibility;
+            }
+        }
+    
+        function updateSatelliteRange(lat, lng, radius) {
+            if (footprintCircle) footprintCircle.setLatLng([lat, lng]).setRadius(radius * 1000);
+            else footprintCircle = L.circle([lat, lng], {radius: radius * 1000, color: '#64B5F6', weight: 1, fillOpacity: 0.1}).addTo(map);
+        }
+    
+        function addTrackStep(lat, lng) {
+            trackSteps.push([lat, lng]);
+            if (trackSteps.length > 500) trackSteps.shift();
+            if (currentPath) map.removeLayer(currentPath);
+            currentPath = L.polyline(trackSteps, {color: '#00E676', weight: 2, opacity: 0.6}).addTo(map);
+        }
+    
+        function drawOrbitPath(points) {
+            pyBridge.js_log('JS drawOrbitPath: ' + points.length + ' points');
+            if (!points || points.length === 0) return;
+            var p = L.polyline(points, {color: '#FF5252', weight: 1, dashArray: '5, 10', opacity: 0.5}).addTo(map);
+            orbitPaths.push(p);
+            pyBridge.js_log('JS: Orbit path added');
+        }
+    
+        function highlightVisiblePass(points) {
+            pyBridge.js_log('JS highlightVisiblePass: ' + points.length + ' points');
+            if (!points || points.length === 0) return;
+            var p = L.polyline(points, {color: '#64B5F6', weight: 4, opacity: 0.8}).addTo(map);
+            passPaths.push(p);
+            pyBridge.js_log('JS: Next pass line added');
+            map.fitBounds(p.getBounds());
+        }
+    
+        function clearSatelliteData() {
+            if (satelliteMarker) { map.removeLayer(satelliteMarker); satelliteMarker = null; }
+            if (footprintCircle) { map.removeLayer(footprintCircle); footprintCircle = null; }
+            orbitPaths.forEach(p => map.removeLayer(p)); orbitPaths = [];
+            passPaths.forEach(p => map.removeLayer(p)); passPaths = [];
+            trackSteps = []; if (currentPath) { map.removeLayer(currentPath); currentPath = null; }
+            
+            pyBridge.js_log('JS: clearSatelliteData called - sat/orbit/pass cleared');
+            
+            // Reset text IDs to default
+            ['p-rise', 'p-set', 'p-el', 'live-el', 'live-az', 'live-alt', 'live-spd', 'live-vis'].forEach(id => {
+                if(document.getElementById(id)) document.getElementById(id).innerText = "---";
+            });
+            if(document.getElementById('p-countdown')) document.getElementById('p-countdown').innerText = "Select Satellite";
+        }
+
+        function clearAllMarkers() {
+            clearSatelliteData();
+            clearCelestial();
+            if (observerMarker) { map.removeLayer(observerMarker); observerMarker = null; }
+            pyBridge.js_log('JS: All markers cleared');
+        }
+
+        function clearCelestial() {
+            if (sunMarker) { map.removeLayer(sunMarker); sunMarker = null; }
+            if (moonMarker) { map.removeLayer(moonMarker); moonMarker = null; }
+            pyBridge.js_log('JS: Celestial markers cleared');
+        }
+    
+function updatePassInfo(info_str) {
+            pyBridge.js_log("JS updatePassInfo: " + info_str);
+            try {
+                var info = JSON.parse(info_str);
+                pyBridge.js_log("JS updatePassInfo keys: " + Object.keys(info));
+                var riseEl = document.getElementById('p-rise');
+                var setEl = document.getElementById('p-set');
+                var elEl = document.getElementById('p-el');
+                var cdEl = document.getElementById('p-countdown');
+                if (riseEl) riseEl.innerText = info.rise_time || '---';
+                if (setEl) setEl.innerText = info.set_time || '---';
+                if (elEl) elEl.innerText = info.max_el || '---';
+                if (cdEl) cdEl.innerText = info.countdown || 'NO PASS';
+                pyBridge.js_log("JS panel updated - Rise: " + (riseEl ? riseEl.innerText : 'missing'));
+            } catch(e) {
+                pyBridge.js_log("JS JSON parse error: " + e);
+            }
+        }
+    
+        function update_celestial_position(body, lat, lng) {
+        console.log('Celestial update:', body, lat.toFixed(4), lng.toFixed(4));
+        pyBridge.js_log('Celestial [' + body + ']: lat=' + lat.toFixed(4) + ', lng=' + lng.toFixed(4));
+        if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+            pyBridge.js_log('WARNING: Invalid celestial position for ' + body + ' - skipping');
+            return;
+        }
+        var icon = body === 'sun' ? '☀️' : body === 'moon' ? '🌕' : '🛰️';
+            var className = body === 'sun' ? 'sun-icon' : body === 'moon' ? 'moon-icon' : 'sat-icon';
+            var marker = body === 'sun' ? sunMarker : moonMarker;
+            
+            if (marker) {
+                marker.setLatLng([lat, lng]);
+                pyBridge.js_log('JS: ' + body + ' marker updated');
+            } else {
+                marker = L.marker([lat, lng], {icon: L.divIcon({className: className, html: icon, iconSize: [32, 32], iconAnchor: [16, 16]})}).addTo(map);
+                if (body === 'sun') sunMarker = marker; else moonMarker = marker;
+                pyBridge.js_log('JS: ' + body + ' marker created at [' + lat.toFixed(4) + ',' + lng.toFixed(4) + ']');
+            }
+            
+            // Auto-adjust view to include celestial bodies
+            var celestialBounds = L.latLngBounds();
+            if (sunMarker) celestialBounds.extend(sunMarker.getLatLng());
+            if (moonMarker) celestialBounds.extend(moonMarker.getLatLng());
+            if (observerMarker) celestialBounds.extend(observerMarker.getLatLng());
+            if (!celestialBounds.isValid()) celestialBounds = map.getBounds();
+            
+            map.fitBounds(celestialBounds, {padding: [50, 50], maxZoom: 5});
+            pyBridge.js_log('Map auto-fit to celestial bounds');
+        }
+    
+        window.onload = initMap;
+    </script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+# REUSE toolbox.txt
+# Add or update these entries to track third-party assets and license holders.
+# Format: <path-or-pattern> => <license> (and optional copyright holder)
+
+# Core project code / docs
+src/** => MIT (SatTrack Contributors)
+assets/** => MIT (review if assets originate from third parties)
+tle_data/** => MIT (review source/terms if you redistribute TLE catalogs)
+satellite_data/** => MIT (generated telemetry; review if you include vendor data)
+firmware/** => MIT (review firmware licensing)
+
+# Root configuration
+main.py => MIT (SatTrack Contributors)
+requirements.txt => MIT (review dependency licenses separately)
+
+# External binaries/assets are not assumed to be MIT; review when distributing.
+# icon.ico => (unknown)
+# video/** => (unknown)
+# de421.bsp => (unknown)
+

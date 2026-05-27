@@ -1,0 +1,7 @@
+PyQt5
+PyQtWebEngine
+requests
+pyserial
+python-dotenv
+skyfield
+numpy

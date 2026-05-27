@@ -1,0 +1,49 @@
+# REUSE configuration file
+#
+# https://reuse.software/spec-/#configuration
+#
+# This project uses SPDX identifiers (see LICENSE) and follows the REUSE
+# Software spec.
+
+[license]
+# The project is licensed under the existing MIT LICENSE file.
+# We reference the file by its SPDX identifier.
+# Note: REUSE tools will still match actual license files by content,
+# but this improves consistency and reporting.
+
+[files]
+# Ensure common files are included in REUSE checks.
+# Any file not matched by an explicit pattern is still checked.
+
+doc = [
+  "REUSE.md",
+  "LICENSE",
+  "REUSE.toml",
+  "REUSE-toolbox.txt",
+  "README*",
+  "*.md"
+]
+
+# Python source files
+source = [
+  "*.py",
+  "src/**/*.py"
+]
+
+# JSON data
+data = [
+  "*.json"
+]
+
+# Web assets embedded in Python (none as standalone files)
+
+# Other text resources
+other = [
+  "requirements.txt",
+  ".env",
+  "*.txt"
+]
+
+[tool]
+# No additional tool configuration.
+

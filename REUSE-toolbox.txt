@@ -1,0 +1,24 @@
+# REUSE toolbox
+#
+# Commands to verify REUSE compliance.
+#
+# 1) Install REUSE tooling (example; adjust to your environment):
+#    pip install reuse-tool
+#    or follow https://reuse.software/manual/cli/install/
+#
+# 2) Run linting:
+#    reuse lint
+#
+# 3) Show violations (often printed by lint). If you want machine-readable output,
+#    REUSE may support additional flags depending on version.
+#
+# 4) Check file headers coverage:
+#    reuse lint --markdown
+#
+# 5) Optional: list detected license matches:
+#    reuse spdx --all
+#
+# If REUSE reports missing license headers, the next step is usually to either:
+# - add SPDX headers to the affected files, or
+# - exclude them via REUSE.toml (prefer adding headers for source code).
+

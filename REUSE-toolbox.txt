@@ -1,0 +1,28 @@
+# This file is intended as a toolbox for license attribution using reuse-toolbox.
+# Adjust mappings if you decide to license parts differently.
+
+# Default: treat repository-authored files (Python, Arduino sketch, JSON data, docs) as MIT.
+# NOTE: Third-party dependencies (requests, skyfield, ttkthemes, pyserial, ArduinoJson, AccelStepper, LiquidCrystal, etc.)
+# are not covered by this mapping and are governed by their own licenses.
+
+# Add the following mappings:
+
+# Path mappings (use glob patterns)
+LICENSE            MIT
+REUSE.md           MIT
+REUSE.toml         MIT
+REUSE-toolbox.txt MIT
+requirements.txt  MIT
+main.py            MIT
+config.py          MIT
+Export_TLE_data_to_Arduino.ino MIT
+namesat+idsat.json MIT
+services/*.py      MIT
+views/*.py         MIT
+services/__init__.py MIT
+views/__init__.py    MIT
+services/*          MIT
+views/*             MIT
+
+# End of file
+

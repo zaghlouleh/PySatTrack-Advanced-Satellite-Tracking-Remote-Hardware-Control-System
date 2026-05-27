@@ -1,0 +1,9 @@
+# REUSE configuration file
+# https://reuse.software/spec/overview/
+
+version = 1
+
+# Apply the MIT license to files marked for MIT usage.
+# Individual files may be marked via SPDX headers (recommended) or via tooling.
+# This repository currently relies on REUSE-toolbox mappings described in REUSE-toolbox.txt.
+

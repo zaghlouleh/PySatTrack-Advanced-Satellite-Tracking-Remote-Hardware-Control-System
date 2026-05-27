@@ -7,7 +7,7 @@ This repository uses the **REUSE Specification** (https://reuse.software/) to ma
 - **`LICENSE`**: MIT license text for this repository.
 - **`REUSE.toml`**: REUSE configuration (defaults to MIT for annotated files).
 - **`REUSE-toolbox.txt`**: A lightweight checklist of file patterns and intended license ownership.
-- **`README.md`**: Explanation of the repository’s major components (and how to interpret license coverage).
+- **`REUSE.md`**: Explanation of the repository’s major components (and how to interpret license coverage).
 
 > Note: Third-party assets/binaries (e.g., `de421.bsp`, `video/*.mp4`, images in `assets/`) may be governed by their own licenses. Add/adjust `REUSE-toolbox.txt` (and eventually `REUSE.toml` path annotations) if you discover different terms.
 

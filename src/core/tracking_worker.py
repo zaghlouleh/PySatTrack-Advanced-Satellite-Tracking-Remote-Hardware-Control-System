@@ -37,14 +37,16 @@ class TrackingWorker(QThread):
         except Exception:
             return 0.0
 
-    def calculate_speed(self, current_pos: Dict[str, Any]) -> float:
-        """Calculates instantaneous speed (km/s) based on the distance from the previous point."""
-        if not self.previous_pos:
-            self.previous_pos = current_pos
-            return 0.0
 
-        p1 = self.previous_pos
-        p2 = current_pos
+    def calculate_speed(self, positions: list) -> float:
+        """Calculates high-resolution speed from consecutive points."""
+        if len(positions) < 2:
+            return 0.0
+        
+        # Sort positions chronologically to guarantee accurate delta
+        positions.sort(key=lambda p: p.get('timestamp', 0))
+        p1 = positions[-2]
+        p2 = positions[-1]
         
         try:
             lat1, lon1 = math.radians(p1['satlatitude']), math.radians(p1['satlongitude'])
@@ -54,13 +56,12 @@ class TrackingWorker(QThread):
             dlat = lat2 - lat1
             a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
             c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
-            distance_km = 6371 * c 
+            distance_km = 6371.0 * c 
             
             time_diff = p2['timestamp'] - p1['timestamp']
-            
-            if time_diff <= 0: return 0.0
-            
-            self.previous_pos = p2
+            if time_diff <= 0: 
+                return 0.0
+                
             return distance_km / time_diff
         except Exception as e:
             logger.error(f"TrackingWorker: Speed calculation error: {e}")
@@ -69,33 +70,29 @@ class TrackingWorker(QThread):
     def run(self):
         """Main loop for polling telemetry."""
         logger.info(f"TrackingWorker: Started for {self.config.get('sat_name')}")
-        
-        # Use the interval from config, fallback to 10 seconds
         interval = self.config.get('interval', 10)
         
         while self.running:
             start_time = time.time()
             try:
-                # FIXED: Standardized configuration keys to match MainWindow.start_tracking()
-                # obs_lat -> lat, obs_lng -> lng, obs_alt -> alt
+                # Query 2 consecutive positions for immediate high-resolution speed
                 response = self.api.get_satellite_position(
                     self.config['sat_id'],
                     self.config['lat'],
                     self.config['lng'],
-                    self.config['alt']
+                    self.config['alt'],
+                    seconds=2  # Restore the 2-second window
                 )
-                logger.info(f"TrackingWorker N2YO resp ({len(response) if response else 0} keys): positions={len(response.get('positions', [])) if response else 0} | keys={list(response.keys()) if response else 'None'}")
 
-                if response and 'positions' in response and response['positions']:
-                    latest_pos = response['positions'][0]
+                if response and 'positions' in response and len(response['positions']) >= 2:
+                    positions = response['positions']
+                    latest_pos = positions[-1]
                     info = response.get('info', {})
                     
-                    # Process and Enrich Data
                     pos_dt = datetime.fromtimestamp(latest_pos['timestamp'], tz=timezone.utc)
-                    speed_kms = self.calculate_speed(latest_pos)
+                    speed_kms = self.calculate_speed(positions)
                     lst = self.calculate_lst(self.config['lng'], pos_dt)
                     
-                    # Merge with configuration
                     full_data = self.config.copy()
                     full_data.update({
                         'sat_name': info.get('satname', self.config['sat_name']),
@@ -114,11 +111,10 @@ class TrackingWorker(QThread):
                         'eclipsed': latest_pos.get('eclipsed', False)
                     })
 
-                    logger.info(f"TrackingWorker EMIT ({len(full_data)} keys): {sorted(full_data.keys())} | ex: lat={full_data['satlatitude']:.3f}, alt={full_data['sataltitude']:.0f}")
                     self.data_ready.emit(full_data)
                     self.data_manager.save_satellite_telemetry(full_data['sat_name'], full_data)
                 else:
-                    msg = "N2YO API Error: No position data returned."
+                    msg = "N2YO API Error: Insufficient position data returned."
                     logger.error(msg)
                     self.error_occurred.emit(msg)
 
@@ -127,7 +123,6 @@ class TrackingWorker(QThread):
                 logger.exception(err_msg)
                 self.error_occurred.emit(err_msg)
 
-            # Controlled sleep
             elapsed = time.time() - start_time
             sleep_time = max(0.5, interval - elapsed)
             time.sleep(sleep_time)

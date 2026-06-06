@@ -978,6 +978,47 @@ class MainWindow(QMainWindow):
         from src.ui.dialogs.diagnostics_dialog import LoggingVerificationDialog
         LoggingVerificationDialog(self).exec_()
 
+    def _run_js(self, command: str):
+        """Safely executes a JavaScript instruction within the map's WebEngine layout."""
+        if (hasattr(self, 'map_js_ready') and self.map_js_ready and 
+                hasattr(self, 'map_view') and isinstance(self.map_view, QWebEngineView)):
+            try:
+                self.map_view.page().runJavaScript(command)
+            except Exception as e:
+                logger.error(f"MainWindow: JS execution failed: {e}")
+
+    def clear_all_satellite_visuals(self):
+        """Clears all map and UI visual indicators from previous tracking sessions."""
+        logger.info("MainWindow: Clearing previous tracking visual indicators.")
+        
+        # 1. Clear Map Elements via Bridge Signals
+        if self.map_js_ready and hasattr(self, 'map_bridge'):
+            # Clear the satellite marker and visibility footprint
+            self.map_bridge.clear_satellite_data.emit()
+            # Clear the live tracking ground trail
+            self.map_bridge.clear_track_steps.emit()
+            # Clear future orbit segments (red dashed line)
+            self.map_bridge.draw_orbit_path.emit([])
+            # Clear upcoming pass segments (solid blue line)
+            self.map_bridge.highlight_visible_pass.emit([])
+        
+        # 2. Reset Telemetry Labels on the Right Panel
+        self.telemetry_panel.update_telemetry({
+            'speed_kms': '---',
+            'speed_mis_s': '---',
+            'sataltitude': '---',
+            'azimuth': '---',
+            'elevation': '---',
+            'ra': '---',
+            'dec': '---',
+            'lst': '---',
+            'period_tle_calculated_min': '---',
+            'eclipsed': False
+        })
+        
+        # 3. Reset Local Pass Data
+        self.last_pass_data = {}
+
     def start_tracking(self):
         if not self.selected_sat_name:
             self.log_panel.append_error("Start Tracking: Select a satellite first.")
@@ -990,7 +1031,7 @@ class MainWindow(QMainWindow):
                 f"Start Tracking: Satellite '{self.selected_sat_name}' not found in database.")
             return
 
-        # Observer validation
+        # 1. Observer Altitude & Interval Validation
         try:
             alt_m = float(self.alt_input.text())
         except Exception:
@@ -1004,9 +1045,11 @@ class MainWindow(QMainWindow):
             self.log_panel.append_error("Start Tracking: Poll rate must be a number.")
             return
 
-        # Optional parity with legacy PySatTrack.py:
-        # If the TCP bridge is connected, try GPS lock first.
-        if hasattr(self, "hardware_bridge_client") and self.hardware_bridge_client is not None and getattr(self.hardware_bridge_client, "is_connected", False):
+        # 2. Automated GPS Telemetry Check (TCP Hardware Bridge Parity)
+        if (hasattr(self, "hardware_bridge_client") and 
+                self.hardware_bridge_client is not None and 
+                getattr(self.hardware_bridge_client, "is_connected", False)):
+            
             gps_status = self.hardware_bridge_client.get_gps_status()
             if gps_status and gps_status.get("gpsLock"):
                 try:
@@ -1014,13 +1057,17 @@ class MainWindow(QMainWindow):
                     self.lng_station = float(gps_status.get("lon"))
                     alt_m = float(gps_status.get("alt", alt_m))
                     tz = datetime.now().astimezone().tzname() or "UTC"
+                    
                     self.telemetry_panel.update_observer(self.lat_station, self.lng_station, alt_m, tz)
                     if self.map_js_ready:
                         self.map_bridge.update_observer_position.emit(self.lat_station, self.lng_station)
                         self.map_bridge.set_map_view.emit(self.lat_station, self.lng_station, 4)
+                        
+                    self.log_panel.append_success("Observer updated automatically via GPS Lock.")
                 except Exception as exc:
-                    self.log_panel.append_error(f"GPS status parsing failed, falling back to city: {exc}")
+                    self.log_panel.append_error(f"GPS status parsing failed, falling back to manual: {exc}")
 
+        # 3. Observer Location Verification
         if self.lat_station == 0.0 and self.lng_station == 0.0:
             self.log_panel.append_error("Start Tracking: Establish the observer (city) first.")
             return
@@ -1028,11 +1075,12 @@ class MainWindow(QMainWindow):
         obs = {'lat': self.lat_station, 'lng': self.lng_station,
                'alt': alt_m, 'interval': interval_s}
 
-
+        # 4. Map & Celestial Refresh
         if self.map_js_ready:
             self.map_bridge.clear_satellite_data.emit()
             self.update_celestial_positions()
 
+        # 5. Terminate Previous Prediction Tasks
         if self.active_prediction_worker:
             self.active_prediction_worker.terminate()
             self.active_prediction_worker.wait()
@@ -1043,27 +1091,46 @@ class MainWindow(QMainWindow):
             self.on_prediction_complete)
         self.active_prediction_worker.start()
 
+        # 6. Terminate Previous Live Polling Tasks
         if self.active_tracking_worker:
             self.active_tracking_worker.stop()
             self.active_tracking_worker.wait()
 
-        # Optional parity with legacy PySatTrack.py:
-        # If TCP bridge is connected, command RF switch via TCP.
-        if self.hardware_bridge_connected:
-            target_channel = 8
-            upper_sat_name = sat['name'].upper()
-            if 'NOAA' in upper_sat_name:
-                target_channel = 1
-            elif 'ISS (ZARYA)' in upper_sat_name:
-                target_channel = 2
-            elif 'GOES' in upper_sat_name:
-                target_channel = 7
+        # 7. Dynamic RF Switch Channel Selection (Accounting for Variable Capacities)
+        channel_count = self.hw_manager.get_rf_channel_count()
+        target_channel = channel_count  # Default fallback to Aux/Test (last channel)
+        
+        upper_sat_name = sat['name'].upper()
+        if 'NOAA' in upper_sat_name:
+            target_channel = 1
+        elif 'ISS (ZARYA)' in upper_sat_name:
+            target_channel = 2
+        elif 'GOES' in upper_sat_name:
+            target_channel = 7
 
+        # Dynamically clamp target channel to current physical switch capacity
+        target_channel = max(1, min(target_channel, channel_count))
+
+        # A. Command RF Switch via TCP Bridge Client
+        if self.hardware_bridge_connected:
             try:
                 self.hardware_bridge_client.send_rf_channel(device_id='RFSwitch', channel=target_channel)
+                self.log_panel.append_success(f"Bridge RF Switch: Routing to channel {target_channel} of {channel_count}")
             except Exception as exc:
                 self.log_panel.append_error(f"TCP RF channel command failed: {exc}")
 
+        # B. Fallback to Local Hardware Manager (Serial/GPIO)
+        if self.hw_manager.is_rf_switch_online() or self.hw_manager.connection:
+            try:
+                success, msg = self.hw_manager.select_rf_channel(target_channel)
+                if success:
+                    self.log_panel.append_success(f"Local RF Switch: Routed to channel {target_channel} of {channel_count}")
+                else:
+                    self.log_panel.append_error(f"Local RF Switch Error: {msg}")
+            except Exception as exc:
+                self.log_panel.append_error(f"Local RF Switch execution failed: {exc}")
+
+        # 8. Start Telemetry Collector Thread
         config = {'sat_id': sat['norad_id'], 'sat_name': sat['name'], **obs}
         freqs = self.n2yo_client.get_frequency_data(int(sat['norad_id']))
 
@@ -1076,8 +1143,9 @@ class MainWindow(QMainWindow):
         self.active_tracking_worker.error_occurred.connect(
             self.log_panel.append_error)
         self.active_tracking_worker.start()
+        
         self.log_panel.append_success(
-            f"Start Tracking: '{sat['name']}' tracking started.")
+            f"Start Tracking: '{sat['name']}' tracking started successfully.")
 
         self.start_btn.setEnabled(False)
         self.stop_btn.setEnabled(True)
@@ -1102,17 +1170,16 @@ class MainWindow(QMainWindow):
         if hasattr(self, "hw_manager") and self.hw_manager is not None:
             self.hw_manager.update_tracking_telemetry(data)
             
+        # Sync real-time metrics to the Leaflet map's floating UI card
         if self.map_js_ready:
-            self.map_bridge.update_satellite_position.emit(
-                data['satlatitude'], data['satlongitude'], data['sataltitude'],
-                data['speed_kms'], data['azimuth'], data['elevation']
-            )
-            self.map_bridge.add_track_step.emit(
-                data['satlatitude'], data['satlongitude'])
-            radius = math.sqrt(data['sataltitude'] *
-                               (2 * 6371.0 + data['sataltitude'])) * 1.15
-            self.map_bridge.update_satellite_range.emit(
-                data['satlatitude'], data['satlongitude'], radius)
+            live_data_payload = {
+                "elevation": data.get('elevation', 0.0),
+                "azimuth": data.get('azimuth', 0.0),
+                "altitude": data.get('sataltitude', 0.0),
+                "speed": data.get('speed_kms', 0.0),
+                "visibility": "Visible" if data.get('elevation', 0.0) > 0 else "Not Visible"
+            }
+            self._run_js(f"updateLiveData({json.dumps(live_data_payload)})")
                 
         # Optional parity with legacy PySatTrack.py:
         if self.hardware_bridge_connected:
@@ -1172,9 +1239,19 @@ class MainWindow(QMainWindow):
             info['countdown'] = f"AOS AT: {int(h):02}:{int(m):02}:{int(s):02}"
         self.map_bridge.update_pass_info.emit(json.dumps(info))
 
+
     def on_map_ready(self):
         self.map_js_ready = True
+        
+        # Center initially
         self.map_bridge.set_map_view.emit(0, 0, 2)
+        
+        # Restore Parity: If ground station coordinates are set, render them
+        if self.lat_station != 0.0 or self.lng_station != 0.0:
+            logger.info(f"Main: Syncing startup station coordinates to map: {self.lat_station}, {self.lng_station}")
+            self.map_bridge.update_observer_position.emit(self.lat_station, self.lng_station)
+            self.map_bridge.set_map_view.emit(self.lat_station, self.lng_station, 4)
+            
         self.update_celestial_positions()
 
     def update_celestial_positions(self):
@@ -1217,10 +1294,38 @@ class MainWindow(QMainWindow):
             PROJECT_ROOT, "tle_source_settings.json"), 'w'))
 
     def closeEvent(self, event):
-        self.stop_tracking()
-        self.hw_manager.disconnect()
+        """Cleanly terminates and joins active threads and sockets during application exit."""
+        logger.info("MainWindow: Initiating graceful shutdown sequence...")
+        
+        # 1. Stop and wait for the live tracking thread
+        if self.active_tracking_worker and self.active_tracking_worker.isRunning():
+            logger.info("MainWindow: Stopping active tracking worker...")
+            self.active_tracking_worker.stop()
+            self.active_tracking_worker.wait(1000)  # Wait up to 1 second
+            
+        # 2. Terminate the path prediction thread
+        if self.active_prediction_worker and self.active_prediction_worker.isRunning():
+            logger.info("MainWindow: Terminating prediction worker...")
+            self.active_prediction_worker.terminate()
+            self.active_prediction_worker.wait(500)
+
+        # 3. Shut down diagnostic loops and disconnect hardware
+        try:
+            self.hw_manager.disconnect()
+        except Exception as e:
+            logger.debug(f"MainWindow: HW disconnect issue on exit: {e}")
+
+        # 4. Disconnect from the local/remote hardware TCP bridge
         try:
             self.hardware_bridge_client.disconnect()
+        except Exception as e:
+            logger.debug(f"MainWindow: Bridge client disconnect issue on exit: {e}")
+
+        # 5. Stop local server sockets if they are active
+        try:
+            self.hw_manager.stop_bridge_server()
         except Exception:
             pass
+
+        logger.info("MainWindow: Shutdown complete.")
         event.accept()

@@ -16,8 +16,8 @@ class BackgroundManager:
     
     def __init__(self):
         self.photo_path = os.path.join(script_dir, "Photo")
-        # self.video_path = os.path.join(script_dir, "video")
-        # self.html_video_path = os.path.join(script_dir, "assets", "video", "background_video.html")
+        self.video_path = os.path.join(script_dir, "video")
+        self.html_video_path = os.path.join(script_dir, "assets", "video", "background_video.html")
         self.current_dialog = None
         
         self.image_files = []
@@ -33,13 +33,12 @@ class BackgroundManager:
         self._load_background_files()
         self._select_background_mode()
         
+        # Verify if video file targets exist in the video directory
         if self.background_mode == 'video' and self.video_files:
             logger.info("Pre-creating QWebEngineView for video background.")
             self.cached_video_widget = self._create_video_background()
 
-        # logger.info(f"Background paths - Photos: {self.photo_path}, Videos: {self.video_path}")
-        # logger.info(f"Found {len(self.image_files)} images and {len(self.video_files)} videos.")
-        logger.info(f"Background mode: '{self.background_mode}'")
+        logger.info(f"Background mode determined: '{self.background_mode}'")
     
     def _load_background_files(self):
         self.image_files = []

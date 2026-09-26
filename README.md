@@ -329,14 +329,14 @@ Any externally sourced assets may have separate licenses. When you add or replac
 
 ### 10.4 Improving REUSE automation (recommended)
 To be fully REUSE/SPDX-friendly, each source file should include an SPDX header such as:
-- `SPDX-License-Identifier: MIT`
+- `SPDX-License-Identifier: This project is proprietary and all rights are reserved. It is publicly viewable for demonstration purposes only. See the LICENSE file for details.`
 
 At the moment, this repo contains REUSE scaffolding (`REUSE.toml` etc.) and a root `LICENSE`, but SPDX headers are not yet applied per-file.
 
 ---
 
 ## 11) Files created by this licensing request
-- `LICENSE` (MIT)
+- `LICENSE`
 - `REUSE.toml`
 - `REUSE-toolbox.txt`
 - This file: `REUSE.md`

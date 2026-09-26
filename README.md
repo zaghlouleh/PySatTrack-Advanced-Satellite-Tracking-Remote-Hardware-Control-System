@@ -4,7 +4,8 @@ This repository uses the **REUSE Specification** (https://reuse.software/) to ma
 
 ## 1) License Files
 
-- **`LICENSE`**: MIT license text for this repository.
+- **`LICENSE`**: This project is proprietary and all rights are reserved. It is publicly viewable
+for demonstration purposes only. See the LICENSE file for details.
 - **`REUSE.toml`**: REUSE configuration (defaults to MIT for annotated files).
 - **`REUSE-toolbox.txt`**: A lightweight checklist of file patterns and intended license ownership.
 - **`REUSE.md`**: Explanation of the repository’s major components (and how to interpret license coverage).

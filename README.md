@@ -315,7 +315,7 @@ This repository uses the REUSE specification via:
 - `REUSE-toolbox.txt`
 
 License:
-- MIT license text is in `./LICENSE`.
+- This project is proprietary and all rights are reserved. It is publicly viewable for demonstration purposes only. See the LICENSE file for details. `./LICENSE`.
 
 ## 11. What to do next (maintainers)
 

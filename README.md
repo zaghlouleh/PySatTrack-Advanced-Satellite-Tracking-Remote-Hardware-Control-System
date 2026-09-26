@@ -346,9 +346,6 @@ To validate licensing metadata compliance:
 - Run:
   - `reuse lint`
 
-If this repository reports missing license headers, update the source files with SPDX
-headers matching the SPDX license identifier for MIT (e.g. `MIT`).
-
 ## Notes found during code review (non-blocking)
 
 - `src/ui/main_window.py` contains:

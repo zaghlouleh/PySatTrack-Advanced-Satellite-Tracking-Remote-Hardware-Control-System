@@ -10,7 +10,7 @@ This document serves two purposes:
 ## 1) REUSE / licensing overview
 
 ### License
-- This repository uses the **MIT** license.
+- This project is proprietary and all rights are reserved. It is publicly viewable for demonstration purposes only. See the LICENSE file for details.
 - The full license text is in: `LICENSE`.
 
 ### REUSE configuration
@@ -22,8 +22,6 @@ This document serves two purposes:
   identifiers, but the strictest REUSE compliance expects SPDX headers per
   file.
 - Currently, most source files in `src/` do not include SPDX license headers.
-- If you want strict REUSE conformance, add at the top of each source file:
-  `SPDX-License-Identifier: MIT`
 
 ---
 

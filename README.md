@@ -5,17 +5,15 @@ This repository contains the **SatTrack v4** application (Python + PyQt5 + Skyfi
 1. Provide a **REUSE.md** style explanation of how licensing/compliance is handled (using REUSE tooling).
 2. Give a **detailed, code-part walkthrough** explaining what each module/file does and how the application works.
 
-> Note on REUSE compliance: REUSE’s automated tooling primarily relies on **file headers / annotations** and the presence of a **REUSE.toml** + a **LICENSE** file. This repository currently uses a top-level MIT `LICENSE` and a `REUSE.toml` that declares MIT for the project. The code in this snapshot does not include per-file `SPDX-License-Identifier` headers, so automated REUSE checks may report missing per-file identifiers.
+> Note on REUSE compliance: REUSE’s automated tooling primarily relies on **file headers / annotations** and the presence of a **REUSE.toml** + a **LICENSE** file. This repository currently uses a top-level `LICENSE` and a `REUSE.toml` that declares LICENSE for the project. The code in this snapshot does not include per-file `SPDX-License-Identifier` headers, so automated REUSE checks may report missing per-file identifiers.
 
 ---
 
 ## 1) Licensing / REUSE setup
 
 ### 1.1 License used for project source code
-- **Top-level license**: `LICENSE` (MIT)
+- **Top-level license**: `LICENSE`
 - **REUSE configuration**: `REUSE.toml`
-
-`REUSE.toml` currently annotates common source/text asset types (e.g., `*.py`, `*.md`, `*.txt`, `*.ico`, `*.bsp`) with the **MIT** identifier.
 
 ### 1.2 How to keep REUSE compliance going
 - Ensure every new file added to the repository is covered either by REUSE **annotations** or a per-file header.

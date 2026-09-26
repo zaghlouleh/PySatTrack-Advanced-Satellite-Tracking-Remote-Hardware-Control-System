@@ -17,8 +17,9 @@ This repository also uses third-party libraries and tools, including (but not li
 
 These components are governed by their own licenses. They are not relicensed by this repository.
 
-### Repository files under MIT
-All repository-owned source and documentation files created as part of this project are intended to be MIT.
+### Repository files under License
+This project is proprietary and all rights are reserved. It is publicly viewable
+for demonstration purposes only. See the LICENSE file for details.
 
 ## 2) Prerequisites before running (API keys / account info)
 

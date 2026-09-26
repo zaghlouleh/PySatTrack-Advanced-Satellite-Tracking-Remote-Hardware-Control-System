@@ -7,7 +7,7 @@ This repository contains:
 
 ## 1) License overview (REUSE)
 
-This project is released under the **MIT License** (see `LICENSE`).
+This project is released under the **License** (see `LICENSE`).
 
 ### Third-party components
 This repository also uses third-party libraries and tools, including (but not limited to):

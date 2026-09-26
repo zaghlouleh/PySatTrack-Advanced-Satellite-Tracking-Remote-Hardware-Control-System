@@ -1,22 +1,60 @@
-MIT License
+Copyright (c) 2026 Ghaith Zaghlouleh 
+All Rights Reserved.
 
-Copyright (c) 2026
+Project: PySatTrack-Advanced-Satellite-Tracking-Remote-Hardware-Control-System
+Contact: ghaith.zaghlouleh@gmail.com
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+This repository and all its contents — including but not limited to source code,
+documentation, images, assets, designs, and any other files — are the exclusive
+property of Ghaith Zaghlouleh and are protected by copyright and
+other intellectual property laws.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+NO LICENSE OR PERMISSION IS GRANTED.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+This project is made publicly available for viewing and demonstration purposes
+only. You may view the repository content to inspect or evaluate the project,
+but you may not use it for any other purpose without prior written permission
+from the copyright holder.
 
+Without express prior written permission, you may NOT:
+
+1. Copy, reproduce, distribute, publish, transmit, or publicly display this
+   project or any part of it.
+2. Modify, adapt, translate, reverse engineer, decompile, disassemble, or create
+   derivative works based on this project.
+3. Use this project or any part of it for commercial purposes.
+4. Sublicense, sell, rent, lease, assign, or otherwise transfer any rights to
+   this project.
+5. Remove, obscure, or alter any copyright, trademark, or other proprietary
+   notices.
+6. Use this project in any way that benefits you or any third party without
+   explicit written permission.
+
+Any permission granted by the copyright holder must be in writing and is limited
+strictly to the terms stated in that written permission.
+
+THIRD-PARTY MATERIALS
+
+Any third-party libraries, dependencies, or assets included in or referenced by
+this project remain subject to their own respective licenses and copyright
+notices. This license does not grant any rights to those third-party materials.
+
+NO WARRANTY
+
+THIS PROJECT IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT.
+
+IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES, OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING
+FROM, OUT OF, OR IN CONNECTION WITH THE PROJECT OR THE VIEWING OR USE OF THE
+PROJECT.
+
+RESERVATION OF RIGHTS
+
+All rights not expressly granted in this notice are reserved by the copyright
+holder. Nothing in this notice shall be construed as granting any license or
+right under any patent, trademark, copyright, or other intellectual property,
+whether by implication, estoppel, or otherwise.
+
+For permission requests, contact: ghaith.zaghlouleh@gmail.com
